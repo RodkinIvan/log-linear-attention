@@ -49,13 +49,9 @@ docker run -ti \
 
 ## Data Preparation
 
-1. Configure the data preprocessing:
-   - Open `hattention/preprocess_data.py`
-   - Modify the save path to your desired location
-
-2. Run the preprocessing script:
+Run the preprocessing script:
 ```bash
-DATASET_PATH=<your_path>
+DATASET_PATH=<your_path_to_save_dataset>
 python -m hattention.preprocess_data $DATASET_PATH
 python -m hattention.convert_to_parquet $DATASET_PATH $DATASET_PATH-parquet
 ```
