@@ -1,7 +1,7 @@
 from datasets import load_dataset, Dataset
 from transformers import AutoTokenizer
 from typing import Dict, Iterator
-
+import sys
 
 def shard_with_streaming(save_dir: str) -> None:
 
@@ -42,4 +42,8 @@ def count_tokens(data_files: str, tokenizer_name: str, batch_size: int = 1000) -
 
 
 if __name__ == "__main__":
-    shard_with_streaming("/export/share/data/Long-Data-Collections-preprocessed")
+    if len(sys.argv) < 2:
+        print("Usage: python preprocess_data.py <path>")
+        sys.exit(1)
+    path = sys.argv[1]
+    shard_with_streaming(path)

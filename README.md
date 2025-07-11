@@ -9,15 +9,27 @@
 git clone --recursive https://github.com/HanGuo97/log-linear-attention.git
 cd log-linear-attention
 ```
+1.1.
+
+```
+conda create -n fla python=3.10
+conda activate fla
+conda install nvidia/label/cuda-12.6.1::cuda
+```
 
 2. Install the package and its dependencies:
 ```bash
-pip install -e .
+pip install -e . # fails, but it's okay
 pip install -e flame/
 pip install -r flame/3rdparty/torchtitan/requirements.txt
+pip install -e . # repetition is intended because the first pip install fails, this one also fails though))
+pip install git+https://github.com/Dao-AILab/causal-conv1d.git
+pip install git+https://github.com/state-spaces/mamba.git
+pip install transformers==4.45.0 jaxtyping zstandard
+pip install flash-attn --no-build-isolation
 ```
 
-### Docker Installation (Optional)
+### Docker Installation (Not needed)
 
 We provide a `Dockerfile` for containerized setup. To use it:
 
@@ -43,11 +55,13 @@ docker run -ti \
 
 2. Run the preprocessing script:
 ```bash
-python -m hattentions.preprocess_data
+DATASET_PATH=<your_path>
+python -m hattention.preprocess_data $DATASET_PATH
+python -m hattention.convert_to_parquet $DATASET_PATH $DATASET_PATH-parquet
 ```
 
 > [!NOTE]
-> The data preprocessing step may take a while.
+> The data preprocessing step may take a while (~2-3 hours).
 
 ## Training
 
@@ -58,7 +72,7 @@ cd flame/
 
 2. Launch training with the following command:
 ```bash
-bash ../scripts/train_flame.sh --name [NAME] --config [CONFIG] --seed [--ac]
+bash ../scripts/train_flame_longdata.sh --name [NAME] --config [CONFIG] --seed [--ac]
 ```
 
 - `NAME`: Name for the experiment and save path
@@ -66,9 +80,15 @@ bash ../scripts/train_flame.sh --name [NAME] --config [CONFIG] --seed [--ac]
 - `--seed`: Create a seed checkpoint before training
 - `--ac`: Optional flag to enable activation checkpointing
 
+For example:
+
+```bash
+bash ../scripts/train_flame_longdata.sh --name test --config transformer_mid2 --seed 42
+```
 > [!NOTE]
-> 1. Before training, modify the absolute file paths in `scripts/train_flame.sh` to match your setup
+> 1. Before training, modify the absolute file paths in `scripts/train_flame_longdata.sh` to match your setup (add your $DATASET_PATH-parquet path in the script, adjust the number of gpus, batch_size)
 > 2. The first training step will compile Triton kernels, which may take tens of minutes
+> 3. batch_size = 2 takes around 35GiB VRAM on 2 gpus. So on 80 GiB GPU you can probably use either 4 or 8 for faster training.
 
 # Acknowledgement
 Special thanks to Tianyuan Zhang, Jyo Pari, Adam Zweiger, and Yu Zhang for lots of help and discussions.
